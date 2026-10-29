@@ -319,3 +319,11 @@ html:not(.js-ready) .split .w{opacity:1!important;transform:none!important}
 .ms-head .plogo{height:48px;border-radius:12px}.big-p{border-radius:18px}
 .ms-head .plogo,.big-p{box-shadow:0 0 0 1px rgba(239,237,230,.22),0 10px 30px rgba(0,0,0,.35)!important}
 :root[data-theme=light] .ms-head .plogo,:root[data-theme=light] .big-p{box-shadow:0 6px 18px rgba(0,0,0,.18)!important}
+
+/* v6: university "?" tile */
+.ms-head .uni-q{width:48px;min-width:48px;height:48px;padding:0;border-radius:12px;background:#0a0a0b;
+  box-shadow:0 0 0 1px rgba(239,237,230,.22),0 10px 30px rgba(0,0,0,.35);
+  font:600 28px/1 var(--display);color:var(--accent);animation:uniPulse 2.8s ease-in-out infinite}
+.tl.is-h .ms-head .uni-q{height:40px;width:40px;min-width:40px;font-size:24px;border-radius:10px}
+@keyframes uniPulse{0%,100%{box-shadow:0 0 0 1px rgba(239,237,230,.22),0 0 0 0 rgba(200,255,46,0)}50%{box-shadow:0 0 0 1px rgba(200,255,46,.55),0 0 0 6px rgba(200,255,46,.12)}}
+@media (prefers-reduced-motion:reduce){.ms-head .uni-q{animation:none}}
