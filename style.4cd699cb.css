@@ -60,7 +60,7 @@ section{position:relative}
 
 /* hero */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:110px var(--pad) 40px;overflow:hidden}
-#lattice{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#hexbase,#hexfield{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .hero-glow{position:absolute;z-index:0;width:80vmax;height:80vmax;right:-30vmax;top:-30vmax;border-radius:50%;
   background:radial-gradient(circle,color-mix(in srgb,var(--accent) 22%,transparent),transparent 60%);filter:blur(20px);animation:drift 18s ease-in-out infinite alternate}
 @keyframes drift{to{transform:translate(-18vmax,22vmax) scale(1.15)}}

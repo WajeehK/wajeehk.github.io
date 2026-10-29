@@ -7,7 +7,7 @@ const motion = hasGsap && !reduce;
 if (!motion) root.classList.remove('motion');
 /* safety net: whatever happens, reveal hero text after 3.5s */
 const revealAll = () => { root.classList.add('revealed');
-  document.querySelectorAll('.name .ch, .headline .hl>span, .hero-loc, .cta, .scroll-cue, .nav, #lattice, .mask>span')
+  document.querySelectorAll('.name .ch, .headline .hl>span, .hero-loc, .cta, .scroll-cue, .nav, #hexbase, #hexfield, .mask>span')
     .forEach(e => { e.style.opacity = ''; e.style.transform = ''; e.style.visibility = ''; }); };
 setTimeout(() => { if (!root.classList.contains('intro-done')) revealAll(); }, 3500);
 
@@ -82,54 +82,113 @@ document.getElementById('theme').addEventListener('click', () => {
   const next = root.dataset.theme === 'light' ? 'dark' : 'light';
   root.dataset.theme = next; localStorage.setItem('wk-theme', next);
   document.querySelector('meta[name=theme-color]').content = next === 'light' ? '#efede6' : '#0a0a0b';
-  latticeColor();
+  hexColors();
 });
 
-/* ---------- lattice canvas ---------- */
-const cv = document.getElementById('lattice'), ctx = cv.getContext('2d');
-let W, H, dpr, pts = [], edges = [], rgb = '239,237,230', acc = '200,255,46', mx = 0, my = 0, running = true;
-function latticeColor(){
+/* ---------- graphene honeycomb canvas ---------- */
+const cv = document.getElementById('hexfield'), ctx = cv.getContext('2d');
+const hero = document.querySelector('.hero');
+let W = 0, H = 0, dpr = 1, N = 0, VX, VY, EA, EB, NE = 0, E, base = null, ink = '239,237,230', acc = '200,255,46';
+let dirty = true; const waves = []; let px = -1e4, py = -1e4, hoverAmt = 0, lastIdle = 0, nextIdle = 1.2;
+function hexColors(){
   const light = root.dataset.theme === 'light';
-  rgb = light ? '13,13,14' : '239,237,230'; acc = light ? '79,111,0' : '200,255,46';
-  if (!motion) draw(0.6);
+  ink = light ? '13,13,14' : '239,237,230'; acc = light ? '79,111,0' : '200,255,46';
+  renderBase(); if (!motion) frame(0);
 }
 function build(){
-  dpr = Math.min(devicePixelRatio || 1, 2);
-  W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr;
-  const n = W < 700 ? 5 : 7, s = 1 / (n - 1); pts = []; edges = [];
-  const id = (x,y,z) => (x*n + y)*n + z;
-  for (let x=0;x<n;x++) for (let y=0;y<n;y++) for (let z=0;z<n;z++){
-    pts.push([x*s-.5, y*s-.5, z*s-.5]);
-    if (x<n-1) edges.push([id(x,y,z), id(x+1,y,z)]);
-    if (y<n-1) edges.push([id(x,y,z), id(x,y+1,z)]);
-    if (z<n-1) edges.push([id(x,y,z), id(x,y,z+1)]);
+  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  W = w; H = h; dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const a = W < 700 ? 17 : 21, sx = Math.sqrt(3) * a, sy = 1.5 * a;      // graphene: bond length a
+  const cols = Math.ceil(W / sx) + 3, rows = Math.ceil(H / sy) + 3;
+  const idA = (i, j) => (j * cols + i) * 2, idB = (i, j) => (j * cols + i) * 2 + 1;
+  N = cols * rows * 2; VX = new Float32Array(N); VY = new Float32Array(N); E = new Float32Array(N);
+  const ea = [], eb = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++){
+    const x = (i - 1) * sx + (j % 2) * sx / 2 - sx / 2, y = (j - 1) * sy;   // A atom (offset rows = honeycomb)
+    VX[idA(i,j)] = x; VY[idA(i,j)] = y; VX[idB(i,j)] = x; VY[idB(i,j)] = y + a;  // B atom directly below A
+    ea.push(idA(i,j)); eb.push(idB(i,j));                                    // A–B vertical bond
+    if (j > 0){                                                                // A to the two B atoms of the row above
+      const o = j % 2;                                                         // odd rows are shifted right by sx/2
+      const l = i - 1 + o, r = i + o;
+      if (l >= 0 && l < cols){ ea.push(idA(i,j)); eb.push(idB(l, j - 1)); }
+      if (r >= 0 && r < cols){ ea.push(idA(i,j)); eb.push(idB(r, j - 1)); }
+    }
   }
+  EA = Int32Array.from(ea); EB = Int32Array.from(eb); NE = EA.length;
+  F = new Float32Array(N); for (let v = 0; v < N; v++) F[v] = fadeAt(VX[v], VY[v]);
+  renderBase();
 }
-function draw(t){
-  const ay = t*.08 + mx*.4, ax = .55 + my*.25, cy = Math.cos(ay), sy = Math.sin(ay), cx = Math.cos(ax), sx = Math.sin(ax);
-  const scale = Math.min(W, H) * (W < 700 ? .95 : .78), ox = W * (W < 700 ? .62 : .7), oy = H * .42;
-  const proj = pts.map(([x,y,z]) => {
-    let X = x*cy - z*sy, Z = x*sy + z*cy, Y = y*cx - Z*sx; Z = y*sx + Z*cx;
-    const p = 2.2 / (2.2 + Z); return [ox + X*scale*p, oy + Y*scale*p, Z];
-  });
-  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H); ctx.lineWidth = 1;
-  for (const [a,b] of edges){
-    const A = proj[a], B = proj[b], d = (1 - (A[2]+B[2])/2) * .5;
-    ctx.strokeStyle = `rgba(${rgb},${(.03 + d*.11).toFixed(3)})`;
-    ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(B[0],B[1]); ctx.stroke();
+function fadeAt(x, y){
+  const dx = (x - W * .5) / (1.2 * W), dy = (y - H * .18) / (.85 * H), d = Math.sqrt(dx*dx + dy*dy);
+  return d < .3 ? 1 : d < .58 ? 1 - (d - .3) / .28 * .45 : d < .88 ? .55 * (1 - (d - .58) / .3) : 0;
+}
+let F = new Float32Array(1);
+function renderBase(){
+  if (!W) return;
+  if (!base){ base = document.createElement('canvas'); base.id = 'hexbase'; base.setAttribute('aria-hidden','true'); cv.parentNode.insertBefore(base, cv); }
+  base.width = cv.width; base.height = cv.height;
+  const b = base.getContext('2d'); b.setTransform(dpr,0,0,dpr,0,0); b.clearRect(0,0,W,H);
+  const FL = 6; b.lineWidth = .8;
+  for (let l = 1; l <= FL; l++){ const lo = (l - 1) / FL, hi = l / FL;
+    b.strokeStyle = `rgba(${ink},${(.075 * (l - .5) / FL).toFixed(4)})`; b.beginPath();
+    for (let k = 0; k < NE; k++){ const p = EA[k], q = EB[k], f = (F[p] + F[q]) / 2; if (f > lo && f <= hi){ b.moveTo(VX[p], VY[p]); b.lineTo(VX[q], VY[q]); } }
+    b.stroke();
+    b.fillStyle = `rgba(${ink},${(.16 * (l - .5) / FL).toFixed(4)})`; b.beginPath();
+    for (let v = 0; v < N; v++){ const f = F[v]; if (f > lo && f <= hi){ b.moveTo(VX[v] + 1.1, VY[v]); b.arc(VX[v], VY[v], 1.1, 0, 6.2832); } }
+    b.fill(); }
+}
+const LV = 7; const binsE = Array.from({length: LV}, () => []), binsV = Array.from({length: LV}, () => []);
+const DX = new Float32Array(1), DY = new Float32Array(1); let dX = DX, dY = DY;
+function frame(t){
+  if (dirty){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); dirty = false; }
+  if (!motion || !N) return;
+  if (dX.length !== N){ dX = new Float32Array(N); dY = new Float32Array(N); }
+  // idle: occasional soft ripples so it's alive without input
+  if (t - lastIdle > nextIdle){ lastIdle = t; nextIdle = 2.6 + Math.random() * 2.4;
+    waves.push({ x: W * (.15 + Math.random() * .7), y: H * (.08 + Math.random() * .45), t0: t, amp: .55 }); }
+  while (waves.length && t - waves[0].t0 > 3.2) waves.shift();
+  if (waves.length > 6) waves.splice(0, waves.length - 6);
+  const R = W < 700 ? 110 : 150, R2 = R * R, ring = W < 700 ? 24 : 34, speed = W < 700 ? 380 : 520;
+  let any = false;
+  for (let v = 0; v < N; v++){
+    const x = VX[v], y = VY[v]; let e = 0, ox = 0, oy = 0;
+    if (hoverAmt > .01){ const ddx = x - px, ddy = y - py, d2 = ddx*ddx + ddy*ddy;
+      if (d2 < R2){ const d = Math.sqrt(d2) || 1, f = (1 - d / R); const k = f * f * hoverAmt; e += k; ox += ddx / d * k * 5; oy += ddy / d * k * 5; } }
+    for (let w = 0; w < waves.length; w++){ const W0 = waves[w], age = t - W0.t0, r = age * speed;
+      const ddx = x - W0.x, ddy = y - W0.y, d = Math.sqrt(ddx*ddx + ddy*ddy) || 1, q = (d - r) / ring;
+      if (q > -2.2 && q < 2.2){ const k = Math.exp(-q*q) * Math.exp(-age * 1.15) * W0.amp; e += k; ox += ddx / d * k * 4; oy += ddy / d * k * 4 - k * 2; } }
+    if (e > 1) e = 1; e *= F[v]; E[v] = e; dX[v] = x + ox; dY[v] = y + oy; if (e > .035) any = true;
   }
-  proj.forEach((P, i) => {
-    const d = 1 - (P[2] + .5); const hot = i % 11 === 0;
-    ctx.fillStyle = hot ? `rgba(${acc},${(.35 + d*.6).toFixed(3)})` : `rgba(${rgb},${(.12 + d*.4).toFixed(3)})`;
-    ctx.beginPath(); ctx.arc(P[0], P[1], (hot ? 2.6 : 1.4) * (0.7 + d*.8), 0, 6.283); ctx.fill();
-  });
+  if (!any) return;
+  dirty = true;
+  for (let l = 0; l < LV; l++){ binsE[l].length = 0; binsV[l].length = 0; }
+  for (let k = 0; k < NE; k++){ const e = Math.max(E[EA[k]], E[EB[k]]); if (e > .035) binsE[Math.min(LV - 1, (e * LV) | 0)].push(k); }
+  for (let v = 0; v < N; v++){ const e = E[v]; if (e > .05) binsV[Math.min(LV - 1, (e * LV) | 0)].push(v); }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth = 1;
+  for (let l = 0; l < LV; l++){ const ks = binsE[l]; if (!ks.length) continue;
+    ctx.strokeStyle = `rgba(${acc},${(.08 + (l + .5) / LV * .55).toFixed(3)})`; ctx.beginPath();
+    for (const k of ks){ const p = EA[k], q = EB[k]; ctx.moveTo(dX[p], dY[p]); ctx.lineTo(dX[q], dY[q]); }
+    ctx.stroke(); }
+  for (let l = 0; l < LV; l++){ const vs = binsV[l]; if (!vs.length) continue;
+    const rr = 1.2 + (l + .5) / LV * 1.9; ctx.fillStyle = `rgba(${acc},${(.2 + (l + .5) / LV * .8).toFixed(3)})`; ctx.beginPath();
+    for (const v of vs){ ctx.moveTo(dX[v] + rr, dY[v]); ctx.arc(dX[v], dY[v], rr, 0, 6.2832); }
+    ctx.fill(); }
 }
-build(); latticeColor(); draw(0.6);
-addEventListener('load', () => { build(); draw(performance.now()/1000); });
-addEventListener('resize', () => { build(); draw(performance.now()/1000); });
+build(); hexColors();
+let rsT; const onResize = () => { clearTimeout(rsT); rsT = setTimeout(() => { const w = cv.clientWidth, h = cv.clientHeight; if (w !== W || h !== H){ build(); frame(performance.now()/1000); } }, 120); };
+if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(cv); else addEventListener('resize', onResize);
+addEventListener('load', () => { build(); frame(performance.now()/1000); });
 if (motion){
-    addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
-  (function loop(){ if (!document.hidden && cv.getBoundingClientRect().bottom > 0) draw(performance.now()/1000); requestAnimationFrame(loop); })();
+  const local = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  hero.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; [px, py] = local(e); hoverAmt = 1; }, { passive: true });
+  hero.addEventListener('pointerleave', () => { hoverAmt = 0; }, { passive: true });
+  hero.addEventListener('pointerdown', e => { const [x, y] = local(e); waves.push({ x, y, t0: performance.now()/1000, amp: 1 }); }, { passive: true });
+  window.__ripple = (x, y) => waves.push({ x, y, t0: performance.now()/1000, amp: 1 });
+  (function loop(){
+    if (!document.hidden && cv.getBoundingClientRect().bottom > 0){ if (hoverAmt > 0 && hoverAmt < 1) hoverAmt *= .9; frame(performance.now()/1000); }
+    requestAnimationFrame(loop);
+  })();
 }
 
 if (!motion){ root.classList.add('intro-done'); document.querySelectorAll('.ms').forEach(m => m.classList.add('on')); return; }
@@ -158,9 +217,9 @@ const intro = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: () => 
 intro.from('.name .ch', { yPercent: 115, rotate: 8, duration: 1.4, stagger: .045 })
      .from('.headline .hl>span', { yPercent: 110, duration: 1.1, stagger: .08 }, .55)
      .from('.hero-loc, .cta, .scroll-cue, .nav', { opacity: 0, y: 16, duration: 1, stagger: .08 }, .75)
-     .from('#lattice', { opacity: 0, duration: 2.2, ease: 'power2.out' }, 0);
+     .from('#hexbase, #hexfield', { opacity: 0, duration: 2.2, ease: 'power2.out' }, 0);
 gsap.to('.name', { yPercent: -18, opacity: .25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-gsap.to('#lattice', { yPercent: 25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+gsap.to('#hexbase, #hexfield', { yPercent: 25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
 /* split words on scroll */
 function splitWords(el){
