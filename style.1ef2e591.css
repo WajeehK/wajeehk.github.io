@@ -250,9 +250,8 @@ html:not(.js-ready) .split .w{opacity:1!important;transform:none!important}
   border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--line);overflow:hidden}
 .logo img{display:block;max-height:28px;max-width:100px;width:auto;height:auto;object-fit:contain;transition:filter .4s,opacity .4s,transform .4s}
 .logo:hover img{transform:scale(1.06)}
-/* logo strip: monochrome until hovered */
-.logo-strip .logo img{filter:grayscale(1) contrast(1.2);opacity:.8}
-.logo-strip .logo:hover img{filter:none;opacity:1}
+/* logo strip: full colour */
+.logo-strip .logo img{filter:none;opacity:1}
 @media (hover:none){.logo img{filter:none;opacity:1}}
 .mono-tile{font:600 13px/1 var(--display);letter-spacing:.02em;color:#0a0a0b;background:var(--accent)}
 .tl.is-h .logos{margin-top:-4px}
@@ -299,3 +298,24 @@ html:not(.js-ready) .split .w{opacity:1!important;transform:none!important}
   .foot-row{flex-wrap:wrap}
   .logo.big{height:52px;max-width:150px}.logo.big img{max-height:34px;max-width:124px}
 }
+
+/* v5 */
+.logo.big{width:150px;min-width:150px;max-width:150px}
+.logo.big img{max-width:118px;max-height:40px}
+.ms-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.ms-head h3{margin:0}
+.ms-head .logo{height:48px;min-width:48px;max-width:96px}
+.ms-head .logo img{max-height:36px;max-width:80px}
+.plogo{background:transparent!important;box-shadow:none!important;padding:0!important}
+.ms-head .plogo{width:48px;min-width:48px}.ms-head .plogo img{max-height:48px;max-width:48px;border-radius:12px}
+.big-p{width:72px;height:72px;margin-bottom:18px;position:relative;z-index:1}
+.big-p img{max-height:72px!important;max-width:72px!important;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.subjects{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.subjects li{padding:6px 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tl.is-h .ms-head .logo{height:40px}.tl.is-h .ms-head .logo img{max-height:28px}
+@media (max-width:520px){.logo.big{width:132px;min-width:132px;max-width:132px;height:56px}.logo.big img{max-width:104px;max-height:36px}}
+.plogo img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain}
+.ms-head .plogo,.big-p{box-shadow:0 0 0 1px var(--line)!important}
+.ms-head .plogo{height:48px;border-radius:12px}.big-p{border-radius:18px}
+.ms-head .plogo,.big-p{box-shadow:0 0 0 1px rgba(239,237,230,.22),0 10px 30px rgba(0,0,0,.35)!important}
+:root[data-theme=light] .ms-head .plogo,:root[data-theme=light] .big-p{box-shadow:0 6px 18px rgba(0,0,0,.18)!important}

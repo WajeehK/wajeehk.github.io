@@ -43,8 +43,8 @@ const certs = [
     ['Introduction to Business Strategy','Harvard Business School Online','Aug 2026'],
     ['Leadership Problem-Solving with AI: Think Like a Leader','Saïd Business School, University of Oxford','Jul 2026']]}
 ];
-const LOGO = {'UC Davis':'ucdavis.png','KAIST':'kaist.png','Shanghai Jiao Tong University':'sjtu.png','L&T EduTech':'lt-edutech.svg',
-  'Duke University':'duke.svg','Springpod':'springpod.svg','Khalifa University':'khalifa.png','Inspirit AI':'inspirit.png','MathWorks':'mathworks.png',
+const LOGO = {'UC Davis':'ucdavis.png','KAIST':'kaist.png','Shanghai Jiao Tong University':'sjtu.png','L&T EduTech':'lt-edutech.png',
+  'Duke University':'duke.png','Springpod':'springpod.png','Khalifa University':'khalifa.png','Inspirit AI':'inspirit.png','MathWorks':'mathworks.png',
   'Harvard Business School Online':'hbs.png','Saïd Business School, University of Oxford':'oxford.png'};
 const mono = n => n.replace(/[^A-Za-z& ]/g,'').split(/\s+/).filter(w => /^[A-Z&]/.test(w)).map(w => w[0]).join('').slice(0,3);
 const logoChip = n => LOGO[n] ? `<span class="logo" title="${n.replace(/&/g,'&amp;')}"><img src="logos/${LOGO[n]}" alt="${n.replace(/&/g,'&amp;')} logo" loading="lazy" decoding="async"></span>`
