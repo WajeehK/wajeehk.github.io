@@ -115,11 +115,11 @@ function draw(t){
   });
 }
 build(); latticeColor(); draw(0.6);
+addEventListener('load', () => { build(); draw(performance.now()/1000); });
 addEventListener('resize', () => { build(); draw(performance.now()/1000); });
 if (motion){
-  new IntersectionObserver(e => running = e[0].isIntersecting).observe(cv);
-  addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
-  (function loop(){ if (running && !document.hidden) draw(performance.now()/1000); requestAnimationFrame(loop); })();
+    addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
+  (function loop(){ if (!document.hidden && cv.getBoundingClientRect().bottom > 0) draw(performance.now()/1000); requestAnimationFrame(loop); })();
 }
 
 if (!motion){ root.classList.add('intro-done'); document.querySelectorAll('.ms').forEach(m => m.classList.add('on')); return; }
