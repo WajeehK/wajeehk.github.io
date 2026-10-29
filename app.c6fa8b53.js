@@ -7,7 +7,7 @@ const motion = hasGsap && !reduce;
 if (!motion) root.classList.remove('motion');
 /* safety net: whatever happens, reveal hero text after 3.5s */
 const revealAll = () => { root.classList.add('revealed');
-  document.querySelectorAll('.name .ch, .headline .hl>span, .hero-loc, .cta, .scroll-cue, .nav, #lattice, .mask>span')
+  document.querySelectorAll('.name .ch, .headline .hl>span, .hero-loc, .cta, .scroll-cue, .nav, #lattice, .mask>span, .portrait')
     .forEach(e => { e.style.opacity = ''; e.style.transform = ''; e.style.visibility = ''; }); };
 setTimeout(() => { if (!root.classList.contains('intro-done')) revealAll(); }, 3500);
 
@@ -158,7 +158,10 @@ const intro = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: () => 
 intro.from('.name .ch', { yPercent: 115, rotate: 8, duration: 1.4, stagger: .045 })
      .from('.headline .hl>span', { yPercent: 110, duration: 1.1, stagger: .08 }, .55)
      .from('.hero-loc, .cta, .scroll-cue, .nav', { opacity: 0, y: 16, duration: 1, stagger: .08 }, .75)
-     .from('#lattice', { opacity: 0, duration: 2.2, ease: 'power2.out' }, 0);
+     .from('#lattice', { opacity: 0, duration: 2.2, ease: 'power2.out' }, 0)
+     .from('.portrait', { opacity: 0, y: 60, duration: 1.6, ease: 'expo.out' }, .35);
+gsap.to('.portrait img', { yPercent: 8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+gsap.to('.portrait', { yPercent: -10, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 gsap.to('.name', { yPercent: -18, opacity: .25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 gsap.to('#lattice', { yPercent: 25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
