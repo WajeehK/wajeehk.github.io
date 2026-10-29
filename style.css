@@ -243,3 +243,59 @@ section{position:relative}
 
 /* split words are only dimmed once JS is ready */
 html:not(.js-ready) .split .w{opacity:1!important;transform:none!important}
+
+/* ---------- logos ---------- */
+.logos{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.logo{display:inline-flex;align-items:center;justify-content:center;flex:none;height:40px;min-width:40px;max-width:120px;padding:6px 10px;
+  border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.logo img{display:block;max-height:28px;max-width:100px;width:auto;height:auto;object-fit:contain;transition:filter .4s,opacity .4s,transform .4s}
+.logo:hover img{transform:scale(1.06)}
+/* logo strip: monochrome until hovered */
+.logo-strip .logo img{filter:grayscale(1) contrast(1.2);opacity:.8}
+.logo-strip .logo:hover img{filter:none;opacity:1}
+@media (hover:none){.logo img{filter:none;opacity:1}}
+.mono-tile{font:600 13px/1 var(--display);letter-spacing:.02em;color:#0a0a0b;background:var(--accent)}
+.tl.is-h .logos{margin-top:-4px}
+.tl.is-h .ms .logo{height:36px}.tl.is-h .ms .logo img{max-height:24px;max-width:84px}
+.ms-link{display:inline-block;margin-top:14px;color:var(--accent-text);font:500 14px var(--sans);border-bottom:1px solid currentColor}
+/* cert rows with logo */
+.cert{grid-template-columns:auto 1fr auto;padding-left:56px}
+.cert .logo{grid-row:1/3;grid-column:1;align-self:center;width:72px;min-width:72px}
+.cert .logo img{max-width:58px;max-height:30px}
+.cert b{grid-column:2}.cert small{grid-column:2}.cert time{grid-column:3}
+/* logo strip marquee */
+.logo-strip{padding:26px 0}
+.logo-strip .mq-track{gap:18px;padding-right:18px;animation-duration:50s}
+.logo.big{height:64px;max-width:180px;padding:10px 18px;border-radius:14px}
+.logo.big img{max-height:42px;max-width:150px}
+/* connect */
+.connect{padding-top:clamp(40px,6vw,100px);padding-bottom:clamp(80px,10vw,160px)}
+.soc{list-style:none;margin-top:clamp(36px,5vw,70px)}
+.soc li{border-top:1px solid var(--line)}
+.soc li:last-child{border-bottom:1px solid var(--line)}
+.soc-link{position:relative;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:clamp(14px,3vw,36px);align-items:center;
+  padding:clamp(18px,3vw,34px) 4px;overflow:hidden;isolation:isolate}
+.soc-link::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--accent);transform:translateY(101%);transition:transform .6s cubic-bezier(.7,0,.2,1)}
+.soc-link:hover::before,.soc-link:focus-visible::before{transform:none}
+.soc-link:hover,.soc-link:focus-visible{color:var(--on-accent)}
+.soc-ic{grid-row:1/3;width:clamp(52px,7vw,84px);aspect-ratio:1;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:background .4s,border-color .4s,color .4s}
+.soc-ic svg{width:42%;height:42%}
+.soc-link:hover .soc-ic{background:var(--on-accent);color:var(--accent);border-color:var(--on-accent)}
+.soc-name{font:600 clamp(2.2rem,8vw,6.5rem)/.95 var(--display);letter-spacing:-.04em;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.soc-link:hover .soc-name{transform:translateX(12px)}
+.soc-handle{grid-column:2;color:var(--muted);margin-top:8px;text-transform:none;word-break:break-all;transition:color .4s}
+.soc-link:hover .soc-handle{color:var(--on-accent)}
+.soc-arrow{grid-row:1/3;grid-column:3;font:400 clamp(1.8rem,5vw,4rem)/1 var(--display);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.soc-link:hover .soc-arrow{transform:rotate(45deg)}
+.foot-row{align-items:center;gap:14px}
+.foot-soc{display:flex;gap:10px}
+.foot-soc a{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:background .3s,color .3s,border-color .3s}
+.foot-soc a:hover{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.foot-soc svg{width:15px;height:15px}
+.credits{margin-top:18px;font-size:11px;line-height:1.5;color:var(--muted);opacity:.75;max-width:60em}
+@media (max-width:520px){
+  .cert{padding-left:0;gap:4px 12px}
+  .cert .logo{width:56px;min-width:56px;height:36px;padding:5px 6px}.cert .logo img{max-width:44px;max-height:22px}
+  .foot-row{flex-wrap:wrap}
+  .logo.big{height:52px;max-width:150px}.logo.big img{max-height:34px;max-width:124px}
+}

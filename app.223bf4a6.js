@@ -43,6 +43,12 @@ const certs = [
     ['Introduction to Business Strategy','Harvard Business School Online','Aug 2026'],
     ['Leadership Problem-Solving with AI: Think Like a Leader','Saïd Business School, University of Oxford','Jul 2026']]}
 ];
+const LOGO = {'UC Davis':'ucdavis.png','KAIST':'kaist.png','Shanghai Jiao Tong University':'sjtu.png','L&T EduTech':'lt-edutech.svg',
+  'Duke University':'duke.svg','Springpod':'springpod.svg','Khalifa University':'khalifa.png','Inspirit AI':'inspirit.png','MathWorks':'mathworks.png',
+  'Harvard Business School Online':'hbs.png','Saïd Business School, University of Oxford':'oxford.png'};
+const mono = n => n.replace(/[^A-Za-z& ]/g,'').split(/\s+/).filter(w => /^[A-Z&]/.test(w)).map(w => w[0]).join('').slice(0,3);
+const logoChip = n => LOGO[n] ? `<span class="logo" title="${n.replace(/&/g,'&amp;')}"><img src="logos/${LOGO[n]}" alt="${n.replace(/&/g,'&amp;')} logo" loading="lazy" decoding="async"></span>`
+  : `<span class="logo mono-tile" title="${n}">${mono(n)}</span>`;
 const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
 let total = 0;
 document.getElementById('cert-groups').innerHTML = certs.map((c, i) => { total += c.items.length; return `
@@ -51,7 +57,7 @@ document.getElementById('cert-groups').innerHTML = certs.map((c, i) => { total +
       <span class="mono n">0${i + 1}</span><h3>${esc(c.g)}</h3><span class="mono c">${String(c.items.length).padStart(2,'0')}</span><span class="pm" aria-hidden="true"></span>
     </button>
     <div class="cg-body"><ul>
-      ${c.items.map(([t, s, d]) => `<li class="cert"><b>${esc(t)}</b><small>${esc(s)}</small>${d ? `<time>${d}</time>` : ''}</li>`).join('')}
+      ${c.items.map(([t, s, d]) => `<li class="cert">${logoChip(s)}<b>${esc(t)}</b><small>${esc(s)}</small>${d ? `<time>${d}</time>` : ''}</li>`).join('')}
     </ul></div>
   </div>`; }).join('');
 document.getElementById('cert-total').textContent = total;
@@ -66,6 +72,10 @@ document.querySelectorAll('.cg-head').forEach(h => h.addEventListener('click', (
 
 /* marquee: duplicate content for seamless loop */
 document.querySelectorAll('.mq-track').forEach(t => { t.innerHTML += t.innerHTML; });
+/* logo fallback: monogram tile if an image fails */
+function logoFallback(img){ const c = img.parentElement; if (!c || c.classList.contains('mono-tile')) return;
+  c.classList.add('mono-tile'); c.textContent = mono(c.title || img.alt.replace(/ logo$/,'')); }
+document.querySelectorAll('.logo img').forEach(i => { if (i.complete && !i.naturalWidth && i.src) logoFallback(i); else i.addEventListener('error', () => logoFallback(i)); });
 
 /* theme (dark default) */
 document.getElementById('theme').addEventListener('click', () => {
@@ -236,6 +246,8 @@ gsap.utils.toArray('.proj').forEach(p => {
   p.addEventListener('pointerleave', () => { rx(0); ry(0); });
 });
 
+/* connect rows */
+gsap.from('.soc li', { y: 60, opacity: 0, stagger: .1, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: '.soc', start: 'top 85%' } });
 /* skills list stagger */
 gsap.from('.skill-list li, .langs li', { y: 30, opacity: 0, stagger: .05, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: '.skills', start: 'top 80%' } });
 gsap.from('.orb', { scale: 0, rotate: -90, duration: 1.2, ease: 'back.out(1.6)', scrollTrigger: { trigger: '.orb', start: 'top 92%' } });
@@ -255,7 +267,7 @@ if (fine){
   const dx = gsap.quickTo(dot, 'x', { duration: .1 }), dy = gsap.quickTo(dot, 'y', { duration: .1 });
   const rxq = gsap.quickTo(ring, 'x', { duration: .45, ease: 'power3' }), ryq = gsap.quickTo(ring, 'y', { duration: .45, ease: 'power3' });
   addEventListener('pointermove', e => { dx(e.clientX); dy(e.clientY); rxq(e.clientX); ryq(e.clientY); });
-  document.querySelectorAll('a, button, .cert').forEach(el => {
+  document.querySelectorAll('a, button, .cert, .logo').forEach(el => {
     el.addEventListener('pointerenter', () => cur.classList.add('hover'));
     el.addEventListener('pointerleave', () => cur.classList.remove('hover'));
   });
