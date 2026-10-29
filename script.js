@@ -5,6 +5,11 @@ const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
 const motion = hasGsap && !reduce;
 if (!motion) root.classList.remove('motion');
+/* safety net: whatever happens, reveal hero text after 3.5s */
+const revealAll = () => { root.classList.add('revealed');
+  document.querySelectorAll('.name .ch, .headline .hl>span, .hero-loc, .cta, .scroll-cue, .nav, #lattice, .mask>span')
+    .forEach(e => { e.style.opacity = ''; e.style.transform = ''; e.style.visibility = ''; }); };
+setTimeout(() => { if (!root.classList.contains('intro-done')) revealAll(); }, 3500);
 
 /* ---------- data ---------- */
 const certs = [
@@ -117,10 +122,11 @@ if (motion){
   (function loop(){ if (running && !document.hidden) draw(performance.now()/1000); requestAnimationFrame(loop); })();
 }
 
-if (!motion){ document.querySelectorAll('.ms').forEach(m => m.classList.add('on')); return; }
+if (!motion){ root.classList.add('intro-done'); document.querySelectorAll('.ms').forEach(m => m.classList.add('on')); return; }
 
 /* ---------- motion ---------- */
 gsap.registerPlugin(ScrollTrigger);
+root.classList.add('js-ready');
 let lenis = null;
 if (typeof window.Lenis !== 'undefined'){
   lenis = new Lenis({ lerp: .1, smoothWheel: true });
@@ -138,7 +144,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click
 document.querySelectorAll('.name .chars').forEach(w => {
   w.innerHTML = [...w.textContent].map(c => `<span class="ch">${c}</span>`).join('');
 });
-const intro = gsap.timeline({ defaults: { ease: 'expo.out' } });
+const intro = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: () => root.classList.add('intro-done') });
 intro.from('.name .ch', { yPercent: 115, rotate: 8, duration: 1.4, stagger: .045 })
      .from('.headline .hl>span', { yPercent: 110, duration: 1.1, stagger: .08 }, .55)
      .from('.hero-loc, .cta, .scroll-cue, .nav', { opacity: 0, y: 16, duration: 1, stagger: .08 }, .75)

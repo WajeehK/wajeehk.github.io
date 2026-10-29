@@ -1,7 +1,7 @@
 :root{
   --bg:#0a0a0b;--bg2:#121214;--ink:#efede6;--muted:#8a8984;--line:rgba(239,237,230,.12);
   --accent:#c8ff2e;--accent-text:#c8ff2e;--on-accent:#0a0a0b;
-  --display:"Clash Display","Space Grotesk",system-ui,sans-serif;
+  --display:"Clash Display","Helvetica Neue",Arial,system-ui,sans-serif;
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --pad:clamp(20px,5vw,72px);
@@ -240,3 +240,6 @@ section{position:relative}
   .grain,.hero-glow,.pulse,.cue-line::after,.mq-track,.tl-hint span{animation:none!important}
   *{transition-duration:.01ms!important}
 }
+
+/* split words are only dimmed once JS is ready */
+html:not(.js-ready) .split .w{opacity:1!important;transform:none!important}
